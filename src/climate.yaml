@@ -25,7 +25,7 @@ heat_cool_mode:
         return;
       }
       float current_temp = id(follow_me).state ? id(follow_me_temp).state : id(t1_temp).state;
-      float average_of_set_points = (id(climate_entity).target_temperature_low + id(climate_entity).target_temperature_high)) / 2;
+      float average_of_set_points = (id(climate_entity).target_temperature_low + id(climate_entity).target_temperature_high) / 2;
 
       if (id(op_bytes) != 0x84 && current_temp <= average_of_set_points) {
         id(op) = "heat";
