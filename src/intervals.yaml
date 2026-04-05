@@ -135,7 +135,7 @@
   startup_delay: 10s
   then:
     - lambda: |-
-        if (!id(first_boot) && id(climate_entity).mode == climate::CLIMATE_MODE_HEAT_COOL) {
+        if (!id(first_boot) && !id(new_input) && id(climate_entity).mode == climate::CLIMATE_MODE_HEAT_COOL) {
           float current_temp = id(follow_me).state ? id(follow_me_temp).state : id(t1_temp).state;
 
           if (id(op_bytes) != 0x84 && current_temp <= id(climate_entity).target_temperature_low) {
