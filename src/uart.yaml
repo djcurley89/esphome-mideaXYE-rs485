@@ -109,7 +109,9 @@ debug:
             switch (id(op_bytes))
             {
               case 0x00:
-                id(climate_entity).make_call().set_mode(CLIMATE_MODE_OFF).perform();
+                if (id(climate_entity).mode != CLIMATE_MODE_OFF) {
+                  id(climate_entity).make_call().set_mode(CLIMATE_MODE_OFF).perform();
+                }
                 break;
               case 0x91:
               case 0x98:
@@ -117,20 +119,50 @@ debug:
               case 0x94:
                 break;
               case 0x88:
-                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL) {
+                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL && id(climate_entity).mode != CLIMATE_MODE_COOL) {
                   id(climate_entity).make_call().set_mode(CLIMATE_MODE_COOL).perform();
                 }
                 break;
               case 0x82:
-                id(climate_entity).make_call().set_mode(CLIMATE_MODE_DRY).perform();
+                if (id(climate_entity).mode != CLIMATE_MODE_DRY) {
+                  id(climate_entity).make_call().set_mode(CLIMATE_MODE_DRY).perform();
+                }
                 break;
               case 0x84:
-                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL) {
+                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL && id(climate_entity).mode != CLIMATE_MODE_HEAT) {
                   id(climate_entity).make_call().set_mode(CLIMATE_MODE_HEAT).perform();
                 }
                 break;
               case 0x81:
-                id(climate_entity).make_call().set_mode(CLIMATE_MODE_FAN_ONLY).perform();
+                if (id(climate_entity).mode != CLIMATE_MODE_FAN_ONLY) {
+                  id(climate_entity).make_call().set_mode(CLIMATE_MODE_FAN_ONLY).perform();
+                }
+                break;
+              default:
+                break;
+            }
+
+            switch (id(fan_bytes))
+            {
+              case 0x80:
+                if (id(climate_entity).fan_mode != CLIMATE_FAN_AUTO) {
+                  id(climate_entity).make_call().set_fan_mode(CLIMATE_FAN_AUTO).perform();
+                }
+                break;
+              case 0x01:
+                if (id(climate_entity).fan_mode != CLIMATE_FAN_HIGH) {
+                  id(climate_entity).make_call().set_fan_mode(CLIMATE_FAN_HIGH).perform();
+                }
+                break;
+              case 0x02:
+                if (id(climate_entity).fan_mode != CLIMATE_FAN_MEDIUM) {
+                  id(climate_entity).make_call().set_fan_mode(CLIMATE_FAN_MEDIUM).perform();
+                }
+                break;
+              case 0x04:
+                if (id(climate_entity).fan_mode != CLIMATE_FAN_LOW) {
+                  id(climate_entity).make_call().set_fan_mode(CLIMATE_FAN_LOW).perform();
+                }
                 break;
               default:
                 break;
