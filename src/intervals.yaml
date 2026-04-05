@@ -139,11 +139,13 @@
           float current_temp = id(follow_me).state ? id(follow_me_temp).state : id(t1_temp).state;
 
           if (id(op_bytes) != 0x84 && current_temp <= id(climate_entity).target_temperature_low) {
+            ESP_LOGI("custom","changing to heat mode");
             id(op_bytes) = 0x84;
             id(new_input) = true;
           }
 
           if (id(op_bytes) != 0x88 && current_temp >= id(climate_entity).target_temperature_high) {
+            ESP_LOGI("custom","changing to cool mode");
             id(op_bytes) = 0x88;
             id(new_input) = true;
           }
@@ -154,6 +156,7 @@
           }
 
           if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
+            ESP_LOGI("custom","Got new set point for cool-- old: %i, new: %f",id(set_temp), low_temp);
             id(set_temp) = low_temp;
             id(new_input) = true;
           }
@@ -164,6 +167,7 @@
           }
 
           if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
+            ESP_LOGI("custom","Got new set point for cool-- old: %i, new: %f",id(set_temp), high_temp);
             id(set_temp) = high_temp;
             id(new_input) = true;
           }
