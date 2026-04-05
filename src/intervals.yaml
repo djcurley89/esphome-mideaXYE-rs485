@@ -139,13 +139,11 @@
           float current_temp = id(follow_me).state ? id(follow_me_temp).state : id(t1_temp).state;
 
           if (id(op_bytes) != 0x84 && current_temp <= id(climate_entity).target_temperature_low) {
-            id(op) = "heat";
             id(op_bytes) = 0x84;
             id(new_input) = true;
           }
 
           if (id(op_bytes) != 0x88 && current_temp >= id(climate_entity).target_temperature_high) {
-            id(op) = "cool";
             id(op_bytes) = 0x88;
             id(new_input) = true;
           }
@@ -157,7 +155,7 @@
 
           if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
             id(set_temp) = low_temp;
-            //id(new_input) = true;
+            id(new_input) = true;
           }
 
           float high_temp = id(climate_entity).target_temperature_high;
@@ -167,7 +165,7 @@
 
           if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
             id(set_temp) = high_temp;
-            //id(new_input) = true;
+            id(new_input) = true;
           }
         }
 

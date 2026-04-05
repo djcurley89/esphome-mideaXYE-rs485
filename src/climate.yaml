@@ -28,13 +28,11 @@ heat_cool_mode:
       float average_of_set_points = (id(climate_entity).target_temperature_low + id(climate_entity).target_temperature_high) / 2;
 
       if (id(op_bytes) != 0x84 && current_temp <= average_of_set_points) {
-        id(op) = "heat";
         id(op_bytes) = 0x84;
         id(new_input) = true;
       }
 
       if (id(op_bytes) != 0x88 && current_temp > average_of_set_points) {
-        id(op) = "cool";
         id(op_bytes) = 0x88;
         id(new_input) = true;
       }
@@ -131,9 +129,8 @@ on_state:
         lambda: 'return x.mode == climate::CLIMATE_MODE_OFF;'
       then:
         - lambda: |-
-            auto call = id(opMode).make_call();
-            call.set_option("off");
-            call.perform();
+            id(op_bytes) = 0x00;
+            id(new_input) = true;
 heat_action:
   - lambda: |-
       //dummy
