@@ -11,7 +11,7 @@ min_fan_mode_switching_time: 1s
 min_idle_time: 1s
 on_boot_restore_from: MEMORY
 visual:
-  temperature_step: 1 "${'°F' if use_fahrenheit == true else '°C'}"
+  temperature_step: "${'1 °F' if use_fahrenheit == true else '1 °C'}"
 default_preset: home 
 preset:
   - name: home
