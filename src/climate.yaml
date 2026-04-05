@@ -44,6 +44,29 @@ dry_mode:
       call.perform();
 on_state:
   - lambda: |-
+      if (id(first_boot)) {
+        return;
+      }
+      float low_temp = x.target_temperature_low;
+
+      if (id(use_fahrenheit)) {
+        low_temp = low_temp * (9.0/5.0) + 32.0;
+      }
+      if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
+        id(set_temp) = low_temp;
+        id(new_input) = true;
+      }
+
+      float high_temp = x.target_temperature_high;
+
+      if (id(use_fahrenheit)) {
+        high_temp = high_temp * (9.0/5.0) + 32.0;
+      }
+      if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
+        id(set_temp) = high_temp;
+        id(new_input) = true;
+      }
+  - lambda: |-
         if (id(first_boot)) {
           return;
         }

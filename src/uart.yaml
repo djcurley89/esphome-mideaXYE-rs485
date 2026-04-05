@@ -92,18 +92,52 @@ debug:
               id(set_temp) = bytes[10];
             }
 
+            float set_temp = id(set_temp);
+            if (id(use_fahrenheit)) {
+              set_temp = (set_temp - 32) * 5.0 / 9.0;
+            }
             // heating set point update on climate entity
             if (id(op_bytes) == 0x84) {
-              if (id(set_temp) != id(climate_entity).target_temperature_low) {
+              if (set_temp != id(climate_entity).target_temperature_low) {
                 id(climate_entity).make_call().set_target_temperature_low(id(set_temp)).perform();
               }
             }
 
-            // coolin set point update on climate entity
+            // cooling set point update on climate entity
             if (id(op_bytes) == 0x88) {
-              if (id(set_temp) != id(climate_entity).target_temperature_high) {
+              if (set_temp != id(climate_entity).target_temperature_high) {
                 id(climate_entity).make_call().set_target_temperature_high(id(set_temp)).perform();
               }
+            }
+
+            switch (id(op_bytes))
+            {
+              case 0x00:
+                id(climate_entity).make_call().set_mode(CLIMATE_MODE_OFF).perform();
+                break;
+              case 0x91:
+              case 0x98:
+              case 0x10:
+              case 0x94:
+                break;
+              case 0x88:
+                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL) {
+                  id(climate_entity).make_call().set_mode(CLIMATE_MODE_COOL).perform();
+                }
+                break;
+              case 0x82:
+                id(climate_entity).make_call().set_mode(CLIMATE_MODE_DRY).perform();
+                break;
+              case 0x84:
+                if (id(climate_entity).mode != CLIMATE_MODE_HEAT_COOL) {
+                  id(climate_entity).make_call().set_mode(CLIMATE_MODE_HEAT).perform();
+                }
+                break;
+              case 0x81:
+                id(climate_entity).make_call().set_mode(CLIMATE_MODE_FAN_ONLY).perform();
+                break;
+              default:
+                break;
             }
 
             // these sensors are offset by 0x28 and in units of 0.5C regardless of what mode the unit is in
