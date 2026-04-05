@@ -88,7 +88,7 @@ on_state:
       float low_temp = x.target_temperature_low;
 
       if (id(use_fahrenheit)) {
-        low_temp = low_temp * (9.0/5.0) + 32.0;
+        low_temp = round(low_temp * (9.0/5.0) + 32.0);
       }
       if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
         id(set_temp) = low_temp;
@@ -98,7 +98,7 @@ on_state:
       float high_temp = x.target_temperature_high;
 
       if (id(use_fahrenheit)) {
-        high_temp = high_temp * (9.0/5.0) + 32.0;
+        high_temp = round(high_temp * (9.0/5.0) + 32.0);
       }
       if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
         id(set_temp) = high_temp;
