@@ -1,0 +1,121 @@
+platform: thermostat
+name: "Climate"
+sensor: t1_temp
+min_cooling_off_time: 1s
+min_cooling_run_time: 1s
+min_heating_off_time: 1s
+min_heating_run_time: 1s
+min_fanning_off_time: 1s
+min_fanning_run_time: 1s
+min_fan_mode_switching_time: 1s
+min_idle_time: 1s
+on_boot_restore_from: MEMORY
+visual:
+  temperature_step: 1 "${'°F' if use_fahrenheit == true else '°C'}"
+default_preset: home 
+preset:
+  - name: home
+    default_target_temperature_low: "${'68 °F' if use_fahrenheit == true else '20 °C'}"
+    default_target_temperature_high: "${'72 °F' if use_fahrenheit == true else '22 °C'}"
+    mode: heat_cool
+heat_cool_mode:
+  - lambda: |-
+      
+heat_mode:
+  - lambda: |-
+      auto call = id(opMode).make_call();
+      call.set_option("heat");
+      call.perform();
+cool_mode:
+  - lambda: |-
+      auto call = id(opMode).make_call();
+      call.set_option("cool");
+      call.perform();
+fan_only_mode:
+  - lambda: |-
+      auto call = id(opMode).make_call();
+      call.set_option("fan_only");
+      call.perform();
+dry_mode:
+  lambda: |-
+      auto call = id(opMode).make_call();
+      call.set_option("dry");
+      call.perform();
+on_state:
+  - lambda: |-
+      float low_temp = x.target_temperature_low;
+      
+      if (id(use_fahrenheit)) {
+        low_temp = low_temp * (9.0/5.0) + 32.0;
+      }
+      if (id(heatingSetPoint).state != low_temp) {
+        auto call = id(heatingSetPoint).make_call();
+        call.set_value(low_temp);
+        call.perform();
+      }
+  - lambda: |-
+      float high_temp = x.target_temperature_high;
+      
+      if (id(use_fahrenheit)) {
+        high_temp = high_temp * (9.0/5.0) + 32.0;
+      }
+      if(id(coolingSetPoint).state != high_temp) {
+        auto call = id(coolingSetPoint).make_call();
+        call.set_value(high_temp);
+        call.perform();
+      }
+  - lambda: |-
+        if (id(first_boot)) {
+          return;
+        }
+        if (x.fan_mode == climate::CLIMATE_FAN_HIGH && id(fan_bytes) != 0x01) {
+          id(fan_bytes) = 0x01;
+          id(new_input) = true;
+        }
+        if (x.fan_mode == climate::CLIMATE_FAN_AUTO && id(fan_bytes) != 0x80) {
+          id(fan_bytes) = 0x80;
+          id(new_input) = true;
+        }
+        if (x.fan_mode == climate::CLIMATE_FAN_MEDIUM && id(fan_bytes) != 0x02) {
+          id(fan_bytes) = 0x02;
+          id(new_input) = true;
+        }
+        if (x.fan_mode == climate::CLIMATE_FAN_LOW && id(fan_bytes) != 0x04) {
+          id(fan_bytes) = 0x04;
+          id(new_input) = true;
+        }
+  - if:
+      condition:
+        lambda: 'return x.mode == climate::CLIMATE_MODE_OFF;'
+      then:
+        - lambda: |-
+            auto call = id(opMode).make_call();
+            call.set_option("off");
+            call.perform();
+heat_action:
+  - lambda: |-
+      //dummy
+cool_action:
+  - lambda: |-
+      //dummy
+fan_only_action:
+  - lambda: |-
+      //dummy
+dry_action:
+  - lambda: |-
+      //dummy
+idle_action:
+  - lambda: |-
+      //dummy
+fan_mode_auto_action:
+  - lambda: |-
+      //dummy
+fan_mode_low_action:
+  - lambda: |-
+      //dummy
+fan_mode_medium_action:
+  - lambda: |-
+      //dummy
+fan_mode_high_action:
+  - lambda: |-
+      //dummy
