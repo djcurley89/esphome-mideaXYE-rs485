@@ -49,7 +49,6 @@ debug:
           if (bytes[1] == 0xC4) 
           {
             id(t4_temp).publish_state((bytes[21] - 0x28) / 2);
-            // sometimes this temporarily gives erroneous values before correcting itself, ignore them
             if (id(use_fahrenheit))
             {
               if (bytes[18] > 0x87 && bytes[18] < 215) {
@@ -91,6 +90,20 @@ debug:
             // we only capture the celcius set point here, since it always comes back celcius no matter what mode the unit is in
             if (!id(use_fahrenheit)) {
               id(set_temp) = bytes[10];
+            }
+
+            // heating set point update on climate entity
+            if (id(op_bytes) == 0x84) {
+              if (id(set_temp) != id(climate_entity).target_temperature_low) {
+                id(climate_entity).make_call().set_target_temperature_low(id(set_temp)).perform();
+              }
+            }
+
+            // coolin set point update on climate entity
+            if (id(op_bytes) == 0x88) {
+              if (id(set_temp) != id(climate_entity).target_temperature_high) {
+                id(climate_entity).make_call().set_target_temperature_high(id(set_temp)).perform();
+              }
             }
 
             // these sensors are offset by 0x28 and in units of 0.5C regardless of what mode the unit is in

@@ -135,33 +135,30 @@
   startup_delay: 10s
   then:
     - lambda: |-
-        if (!id(first_boot) && id(auto_heat_cool).state) {
+        if (!id(first_boot) && id(climate_entity).mode == climate::CLIMATE_MODE_HEAT_COOL) {
           float current_temp = id(follow_me).state ? id(follow_me_temp).state : id(t1_temp).state;
-          
-          if (id(use_fahrenheit)) {
-            current_temp = (current_temp * 9.0 / 5.0) + 32.0;
-          }
-          if (id(op_bytes) != 0x84 && current_temp < id(heatingSetPoint).state && id(coolingSetPoint).state - id(heatingSetPoint).state >= 1) {
+
+          if (id(op_bytes) != 0x84 && current_temp <= id(climate_entity).target_temperature_low) {
             id(op) = "heat";
             id(op_bytes) = 0x84;
             id(new_input) = true;
           }
 
-          if (id(op_bytes) != 0x88 && current_temp > id(coolingSetPoint).state && id(coolingSetPoint).state - id(heatingSetPoint).state >= 1) {
+          if (id(op_bytes) != 0x88 && current_temp >= id(climate_entity).target_temperature_high) {
             id(op) = "cool";
             id(op_bytes) = 0x88;
             id(new_input) = true;
           }
 
-          if (id(op_bytes) == 0x84 && id(setPoint).state != id(heatingSetPoint).state) {
+          if (id(op_bytes) == 0x84 && id(setPoint).state != id(climate_entity).target_temperature_low) {
             auto call = id(setPoint).make_call();
-            call.set_value(id(heatingSetPoint).state);
+            call.set_value(id(climate_entity).target_temperature_low);
             call.perform();
           }
 
-          if (id(op_bytes) == 0x88 && id(setPoint).state != id(coolingSetPoint).state) {
+          if (id(op_bytes) == 0x88 && id(setPoint).state != id(climate_entity).target_temperature_high) {
             auto call = id(setPoint).make_call();
-            call.set_value(id(coolingSetPoint).state);
+            call.set_value(id(climate_entity).target_temperature_high);
             call.perform();
           }
         }
