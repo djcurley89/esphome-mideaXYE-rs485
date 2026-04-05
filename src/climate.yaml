@@ -123,7 +123,7 @@ on_state:
           id(fan_bytes) = 0x01;
           id(new_input) = true;
         }
-        if (x.fan_mode == climate::CLIMATE_FAN_AUTO && id(fan_bytes) != 0x80) {
+        if (x.fan_mode == climate::CLIMATE_FAN_AUTO && id(fan_bytes) < 0x80) {
           ESP_LOGI("custom","Changing fan mode to auto");
           id(fan_bytes) = 0x80;
           id(new_input) = true;
