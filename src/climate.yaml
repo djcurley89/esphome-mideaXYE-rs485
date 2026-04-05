@@ -93,6 +93,7 @@ on_state:
         low_temp = low_temp * (9.0/5.0) + 32.0;
       }
       if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
+        ESP_LOGI("custom","Got new set point for cool-- old: %i, new: %f",id(set_temp), low_temp);
         id(set_temp) = low_temp;
         id(new_input) = true;
       }
@@ -103,6 +104,7 @@ on_state:
         high_temp = high_temp * (9.0/5.0) + 32.0;
       }
       if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
+        ESP_LOGI("custom","Got new set point for cool-- old: %i, new: %f",id(set_temp), high_temp);
         id(set_temp) = high_temp;
         id(new_input) = true;
       }
