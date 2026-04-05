@@ -99,14 +99,14 @@ debug:
             // heating set point update on climate entity
             if (id(op_bytes) == 0x84) {
               if (set_temp != id(climate_entity).target_temperature_low) {
-                id(climate_entity).make_call().set_target_temperature_low(id(set_temp)).perform();
+                id(climate_entity).make_call().set_target_temperature_low(set_temp).perform();
               }
             }
 
             // cooling set point update on climate entity
             if (id(op_bytes) == 0x88) {
               if (set_temp != id(climate_entity).target_temperature_high) {
-                id(climate_entity).make_call().set_target_temperature_high(id(set_temp)).perform();
+                id(climate_entity).make_call().set_target_temperature_high(set_temp).perform();
               }
             }
 
