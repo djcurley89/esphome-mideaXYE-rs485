@@ -39,6 +39,7 @@ debug:
           return;
         }
         
+        float set_point_sync;
         if (id(command_sent)) {
           // turn off command_sent flag so we know we can resume queries
           id(command_sent)=false;
@@ -53,6 +54,7 @@ debug:
             {
               if (bytes[18] > 0x87 && bytes[18] < 215) {
                 id(set_temp) = bytes[18] - 0x87;
+                set_point_sync = ((bytes[18] - 0x87)) - 32) * 5.0 / 9.0;
               }
             }
             
@@ -90,19 +92,20 @@ debug:
             // we only capture the celcius set point here, since it always comes back celcius no matter what mode the unit is in
             if (!id(use_fahrenheit)) {
               id(set_temp) = bytes[10];
+              set_point_sync = bytes[10];
             }
 
             // heating set point update on climate entity
             if (id(op_bytes) == 0x84) {
-              if (bytes[10] != id(climate_entity).target_temperature_low) {
-                id(climate_entity).make_call().set_target_temperature_low(bytes[10]).perform();
+              if (set_point_sync != id(climate_entity).target_temperature_low) {
+                id(climate_entity).make_call().set_target_temperature_low(set_point_sync).perform();
               }
             }
 
             // cooling set point update on climate entity
             if (id(op_bytes) == 0x88) {
-              if (bytes[10] != id(climate_entity).target_temperature_high) {
-                id(climate_entity).make_call().set_target_temperature_high(bytes[10]).perform();
+              if (set_point_sync != id(climate_entity).target_temperature_high) {
+                id(climate_entity).make_call().set_target_temperature_high(set_point_sync).perform();
               }
             }
 
