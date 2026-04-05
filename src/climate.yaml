@@ -28,11 +28,13 @@ heat_cool_mode:
       float average_of_set_points = (id(climate_entity).target_temperature_low + id(climate_entity).target_temperature_high) / 2;
 
       if (id(op_bytes) != 0x84 && current_temp <= average_of_set_points) {
+        ESP_LOGI("custom","Changing mode to heat");
         id(op_bytes) = 0x84;
         id(new_input) = true;
       }
 
       if (id(op_bytes) != 0x88 && current_temp > average_of_set_points) {
+        ESP_LOGI("custom","Changing mode to cool");
         id(op_bytes) = 0x88;
         id(new_input) = true;
       }
@@ -61,24 +63,28 @@ heat_cool_mode:
 heat_mode:
   - lambda: |-
       if (!id(first_boot) && id(op_bytes) != 0x84) {
+        ESP_LOGI("custom","Changing mode to heat");
         id(op_bytes) = 0x84;
         id(new_input) = true;
       }
 cool_mode:
   - lambda: |-
       if (!id(first_boot) && id(op_bytes) != 0x88) {
+        ESP_LOGI("custom","Changing mode to cool");
         id(op_bytes) = 0x88;
         id(new_input) = true;
       }
 fan_only_mode:
   - lambda: |-
       if (!id(first_boot) && id(op_bytes) != 0x81) {
+        ESP_LOGI("custom","Changing mode to fan only");
         id(op_bytes) = 0x81;
         id(new_input) = true;
       }
 dry_mode:
   lambda: |-
       if (!id(first_boot) && id(op_bytes) != 0x82) {
+        ESP_LOGI("custom","Changing mode to dry");
         id(op_bytes) = 0x82;
         id(new_input) = true;
       }
@@ -113,18 +119,22 @@ on_state:
           return;
         }
         if (x.fan_mode == climate::CLIMATE_FAN_HIGH && id(fan_bytes) != 0x01) {
+          ESP_LOGI("custom","Changing fan mode to high");
           id(fan_bytes) = 0x01;
           id(new_input) = true;
         }
         if (x.fan_mode == climate::CLIMATE_FAN_AUTO && id(fan_bytes) != 0x80) {
+          ESP_LOGI("custom","Changing fan mode to auto");
           id(fan_bytes) = 0x80;
           id(new_input) = true;
         }
         if (x.fan_mode == climate::CLIMATE_FAN_MEDIUM && id(fan_bytes) != 0x02) {
+          ESP_LOGI("custom","Changing fan mode to medium");
           id(fan_bytes) = 0x02;
           id(new_input) = true;
         }
         if (x.fan_mode == climate::CLIMATE_FAN_LOW && id(fan_bytes) != 0x04) {
+          ESP_LOGI("custom","Changing fan mode to low");
           id(fan_bytes) = 0x04;
           id(new_input) = true;
         }
@@ -133,6 +143,7 @@ on_state:
         lambda: 'return x.mode == climate::CLIMATE_MODE_OFF;'
       then:
         - lambda: |-
+            ESP_LOGI("custom","Changing mode to off");
             id(op_bytes) = 0x00;
             id(new_input) = true;
 heat_action:
