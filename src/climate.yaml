@@ -1,5 +1,6 @@
 platform: thermostat
 name: "Climate"
+id: climate_entity
 sensor: t1_temp
 min_cooling_off_time: 1s
 min_cooling_run_time: 1s
