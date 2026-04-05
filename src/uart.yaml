@@ -92,24 +92,26 @@ debug:
               id(set_temp) = bytes[10];
             }
 
-            float set_point_c;
-            if (id(use_fahrenheit)) {
-              set_point_c = (id(set_temp) - 32) * 5.0 / 9.0;
-            } else {
-              set_point_c = id(set_temp);
-            }
-
-            // heating set point update on climate entity
-            if (id(op_bytes) == 0x84) {
-              if (set_point_c != id(climate_entity).target_temperature_low) {
-                id(climate_entity).make_call().set_target_temperature_low(set_point_c).perform();
+            if (!id(first_boot)) {
+              float set_point_c;
+              if (id(use_fahrenheit)) {
+                set_point_c = (id(set_temp) - 32) * 5.0 / 9.0;
+              } else {
+                set_point_c = id(set_temp);
               }
-            }
 
-            // cooling set point update on climate entity
-            if (id(op_bytes) == 0x88) {
-              if (set_point_c != id(climate_entity).target_temperature_high) {
-                id(climate_entity).make_call().set_target_temperature_high(set_point_c).perform();
+              // heating set point update on climate entity
+              if (id(op_bytes) == 0x84) {
+                if (set_point_c != id(climate_entity).target_temperature_low) {
+                  id(climate_entity).make_call().set_target_temperature_low(set_point_c).perform();
+                }
+              }
+
+              // cooling set point update on climate entity
+              if (id(op_bytes) == 0x88) {
+                if (set_point_c != id(climate_entity).target_temperature_high) {
+                  id(climate_entity).make_call().set_target_temperature_high(set_point_c).perform();
+                }
               }
             }
 

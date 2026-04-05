@@ -150,7 +150,7 @@
 
           float low_temp = id(climate_entity).target_temperature_low;
           if (id(use_fahrenheit)) {
-            low_temp = round(low_temp * (9.0/5.0) + 32.0);
+            low_temp = low_temp * (9.0/5.0) + 32.0;
           }
 
           if (id(op_bytes) == 0x84 && id(set_temp) != low_temp) {
@@ -160,7 +160,7 @@
 
           float high_temp = id(climate_entity).target_temperature_high;
           if (id(use_fahrenheit)) {
-            high_temp = round(high_temp * (9.0/5.0) + 32.0);
+            high_temp = high_temp * (9.0/5.0) + 32.0;
           }
 
           if (id(op_bytes) == 0x88 && id(set_temp) != high_temp) {
