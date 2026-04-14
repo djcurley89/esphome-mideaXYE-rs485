@@ -40,24 +40,21 @@ debug:
         }
         
         if (id(command_sent)) {
-          // turn off command_sent flag so we know we can resume queries
           id(command_sent)=false;
         } else if (id(new_input)){
-          // do nothing if there is new input so we don't overwrite whatever the user did
+          // do nothing
         } else {
-          // C4 queries are for setpoints (in F only) and T4 temps
+          // 1. Handle C4 Specific Data (T4 and Fahrenheit Setpoint)
           if (bytes[1] == 0xC4) 
           {
-            id(t4_temp).publish_state((bytes[21] - 0x28) / 2);
+            id(t4_temp).publish_state((bytes[21] - 0x28) / 2.0);
             if (id(use_fahrenheit))
             {
               if (bytes[18] > 0x87 && bytes[18] < 215) {
                 id(set_temp) = bytes[18] - 0x87;
               }
             }
-            
-            id(first_boot) = false;
-            return;
+            // IMPORTANT: Removed 'return' so C4 frames can also update shared state below if needed
           }
           
           // C6 is the follow me update. we don't do anything with the responses
@@ -65,18 +62,9 @@ debug:
             return;
           }
 
-          // what follows is the standard C0 query which captures most of the sensor data
-          bool theyMatch = true;
-          uint8_t i;
-          for (i=0;i<6;++i)
-          {
-            if (i != 1) {
-              if (bytes[i]!=checkData[i])
-              {
-                theyMatch = false;
-              }
-            }
-          }
+          // 2. Modified Matching Logic to accept both C0 and C4
+          bool theyMatch = (bytes[0] == 0xAA); // Basic header check
+          
           if (theyMatch)
           {
             if (id(compressor_status).state && !(bytes[19] & 0x01)) {
@@ -177,11 +165,17 @@ debug:
                 break;
             }
 
-            // these sensors are offset by 0x28 and in units of 0.5C regardless of what mode the unit is in
-            id(t1_temp).publish_state((bytes[11] - 0x28) / 2);
-            id(t2a_temp).publish_state((bytes[12] - 0x28) / 2);
-            id(t2b_temp).publish_state((bytes[13] - 0x28) / 2);
-            id(t3_temp).publish_state((bytes[14] - 0x28) / 2);
+            // Only update T1-T3 if it's a C0 frame (C4 frames have different data here)
+            if (bytes[1] == 0xC0) {
+              id(t1_temp).publish_state((bytes[11] - 0x28) / 2.0);
+              id(t2a_temp).publish_state((bytes[12] - 0x28) / 2.0);
+              id(t2b_temp).publish_state((bytes[13] - 0x28) / 2.0);
+              id(t3_temp).publish_state((bytes[14] - 0x28) / 2.0);
+              
+              if (!id(use_fahrenheit)) {
+                id(set_temp) = bytes[10]; // Celsius setpoint from C0
+              }
+            }
 
             // compressor status and defrost binary sensors. Defrost code may be different on other units, await user feedback
             // byte 19 can apparently indicate outdoor fan and compressor on some units, hence the bitwise comparison for compressor only
