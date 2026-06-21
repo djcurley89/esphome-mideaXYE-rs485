@@ -16,8 +16,16 @@ visual:
 default_preset: home 
 preset:
   - name: home
-    default_target_temperature_low: "${'68 °F' if use_fahrenheit == true else '20 °C'}"
-    default_target_temperature_high: "${'72 °F' if use_fahrenheit == true else '22 °C'}"
+    default_target_temperature_low: "${'66 °F' if use_fahrenheit == true else '19 °C'}"
+    default_target_temperature_high: "${'75 °F' if use_fahrenheit == true else '24 °C'}"
+    mode: heat_cool
+  - name: away
+    default_target_temperature_low: "${'60 °F' if use_fahrenheit == true else '16 °C'}"
+    default_target_temperature_high: "${'78 °F' if use_fahrenheit == true else '26 °C'}"
+    mode: heat_cool
+  - name: sleep
+    default_target_temperature_low: "${'62 °F' if use_fahrenheit == true else '17 °C'}"
+    default_target_temperature_high: "${'80 °F' if use_fahrenheit == true else '27 °C'}"
     mode: heat_cool
 heat_cool_mode:
   - lambda: |-
