@@ -18,34 +18,48 @@ preset:
   - name: home
   - name: away
   - name: sleep
-preset_change:
+on_control:
   - lambda: |-
+      // 1. Only intervene if a preset change was requested
+      if (!x.get_preset().has_value()) return;
+      
+      auto requested_preset = x.get_preset().value();
+      
+      // 2. Prevent an infinite loop when we trigger our own call
+      if (requested_preset == id(climate_entity).preset) return;
+
       auto call = id(climate_entity).make_call();
+      call.set_preset(requested_preset);
+
       float low_temp = 0.0;
       float high_temp = 0.0;
-      
-      // 1. Determine targets based on the active preset
-      if (id(climate_entity).preset == climate::CLIMATE_PRESET_HOME) {
+
+      // 3. Define the temperatures for the preset
+      if (requested_preset == climate::CLIMATE_PRESET_HOME) {
         low_temp = id(use_fahrenheit) ? 66.0 : 19.0;
         high_temp = id(use_fahrenheit) ? 75.0 : 24.0;
-      } else if (id(climate_entity).preset == climate::CLIMATE_PRESET_AWAY) {
+      } else if (requested_preset == climate::CLIMATE_PRESET_AWAY) {
         low_temp = id(use_fahrenheit) ? 60.0 : 16.0;
         high_temp = id(use_fahrenheit) ? 78.0 : 26.0;
-      } else if (id(climate_entity).preset == climate::CLIMATE_PRESET_SLEEP) {
+      } else if (requested_preset == climate::CLIMATE_PRESET_SLEEP) {
         low_temp = id(use_fahrenheit) ? 62.0 : 17.0;
         high_temp = id(use_fahrenheit) ? 80.0 : 27.0;
       } else {
-        return; // Ignore if it's an unset or unknown preset
+        return; // Ignore if it's not a preset we are actively managing
       }
 
-      // 3. Update the single-point target so ESPHome doesn't force a mode change
+      // 4. Feed ESPHome ONLY the temperature it expects for the active mode
       if (id(climate_entity).mode == climate::CLIMATE_MODE_HEAT) {
         call.set_target_temperature(low_temp);
       } else if (id(climate_entity).mode == climate::CLIMATE_MODE_COOL) {
         call.set_target_temperature(high_temp);
+      } else {
+        // If it is already in heat_cool or off, it can safely accept both limits
+        call.set_target_temperature_low(low_temp);
+        call.set_target_temperature_high(high_temp);
       }
-
-      // 4. Execute the changes
+      
+      // 5. Execute the changes safely
       call.perform();
 heat_cool_mode:
   - lambda: |-
