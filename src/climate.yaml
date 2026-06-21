@@ -15,6 +15,7 @@ visual:
   temperature_step: "${'1 °F' if use_fahrenheit == true else '1 °C'}"
 default_preset: home 
 preset:
+  - name: none
   - name: home
     default_target_temperature_low: "${'66 °F' if use_fahrenheit == true else '19 °C'}"
     default_target_temperature_high: "${'75 °F' if use_fahrenheit == true else '24 °C'}"
