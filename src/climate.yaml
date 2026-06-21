@@ -96,6 +96,54 @@ on_state:
       if (id(first_boot)) {
         return;
       }
+
+      // Check if a preset is currently active
+      if (x.preset.has_value() && x.preset.value() != climate::CLIMATE_PRESET_NONE) {
+        float current_low = x.target_temperature_low;
+        float current_high = x.target_temperature_high;
+
+        // Apply your Fahrenheit conversion if necessary
+        if (id(use_fahrenheit)) {
+          current_low = current_low * (9.0/5.0) + 32.0;
+          current_high = current_high * (9.0/5.0) + 32.0;
+        }
+
+        // Round to safely compare float values against defined whole numbers
+        int check_low = round(current_low);
+        int check_high = round(current_high);
+        int expected_low = check_low;
+        int expected_high = check_high;
+
+        // Map the expected bounds based on the active preset
+        switch (x.preset.value()) {
+          case climate::CLIMATE_PRESET_HOME:
+            expected_low = id(use_fahrenheit) ? 66 : 19;
+            expected_high = id(use_fahrenheit) ? 75 : 24;
+            break;
+          case climate::CLIMATE_PRESET_AWAY:
+            expected_low = id(use_fahrenheit) ? 60 : 16;
+            expected_high = id(use_fahrenheit) ? 78 : 26;
+            break;
+          case climate::CLIMATE_PRESET_SLEEP:
+            expected_low = id(use_fahrenheit) ? 62 : 17;
+            expected_high = id(use_fahrenheit) ? 80 : 27;
+            break;
+          default:
+            break;
+        }
+
+        // If the user's manual setpoint drifts from the expected preset bounds, clear it
+        if (check_low != expected_low || check_high != expected_high) {
+          ESP_LOGI("custom", "Manual temperature change detected. Clearing preset.");
+          auto call = id(climate_entity).make_call();
+          call.set_preset(climate::CLIMATE_PRESET_NONE);
+          call.perform();
+        }
+      }
+  - lambda: |-
+      if (id(first_boot)) {
+        return;
+      }
       float low_temp = x.target_temperature_low;
 
       if (id(use_fahrenheit)) {
