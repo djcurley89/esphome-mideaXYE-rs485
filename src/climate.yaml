@@ -13,6 +13,44 @@ min_idle_time: 1s
 on_boot_restore_from: MEMORY
 visual:
   temperature_step: "${'1 °F' if use_fahrenheit == true else '1 °C'}"
+default_preset: home 
+preset:
+  - name: home
+  - name: away
+  - name: sleep
+preset_change:
+  - lambda: |-
+      auto call = id(climate_entity).make_call();
+      float low_temp = 0.0;
+      float high_temp = 0.0;
+      
+      // 1. Determine targets based on the active preset
+      if (id(climate_entity).preset == climate::CLIMATE_PRESET_HOME) {
+        low_temp = id(use_fahrenheit) ? 66.0 : 19.0;
+        high_temp = id(use_fahrenheit) ? 75.0 : 24.0;
+      } else if (id(climate_entity).preset == climate::CLIMATE_PRESET_AWAY) {
+        low_temp = id(use_fahrenheit) ? 60.0 : 16.0;
+        high_temp = id(use_fahrenheit) ? 78.0 : 26.0;
+      } else if (id(climate_entity).preset == climate::CLIMATE_PRESET_SLEEP) {
+        low_temp = id(use_fahrenheit) ? 62.0 : 17.0;
+        high_temp = id(use_fahrenheit) ? 80.0 : 27.0;
+      } else {
+        return; // Ignore if it's an unset or unknown preset
+      }
+
+      // 2. Always update the dual setpoints behind the scenes
+      call.set_target_temperature_low(low_temp);
+      call.set_target_temperature_high(high_temp);
+
+      // 3. Update the single-point target so ESPHome doesn't force a mode change
+      if (id(climate_entity).mode == climate::CLIMATE_MODE_HEAT) {
+        call.set_target_temperature(low_temp);
+      } else if (id(climate_entity).mode == climate::CLIMATE_MODE_COOL) {
+        call.set_target_temperature(high_temp);
+      }
+
+      // 4. Execute the changes
+      call.perform();
 heat_cool_mode:
   - lambda: |-
       if (id(first_boot)) {
