@@ -98,30 +98,30 @@ on_state:
       }
 
       // ==============================================================
-      // HARD CLAMPING LOGIC (Min Cooling: 68°F / Max Heating: 72°F)
+      // HARD CLAMPING LOGIC (ESPHome Native Core is ALWAYS Celsius!)
+      // 68°F = 20.0°C  |  72°F = 22.222°C
       // ==============================================================
-      float max_heat = id(use_fahrenheit) ? 72.0 : 22.0; // 22°C is ~71.6°F
-      float min_cool = id(use_fahrenheit) ? 68.0 : 20.0; // 20°C is 68°F
+      float max_heat = id(use_fahrenheit) ? 22.222 : 22.0; 
+      float min_cool = id(use_fahrenheit) ? 20.000 : 20.0; 
       bool clamped = false;
 
-      // Clamp target_temperature_low (Heating Setpoint)
+      // Clamp Heating Setpoint (72°F Max)
       if (x.target_temperature_low > max_heat) {
-        ESP_LOGI("custom", "Heat setpoint %f exceeds max limit. Clamping to %f", x.target_temperature_low, max_heat);
+        ESP_LOGI("custom", "Heat setpoint clamped back down to 72°F");
         id(climate_entity).target_temperature_low = max_heat;
         clamped = true;
       }
 
-      // Clamp target_temperature_high (Cooling Setpoint)
+      // Clamp Cooling Setpoint (68°F Min)
       if (x.target_temperature_high < min_cool) {
-        ESP_LOGI("custom", "Cool setpoint %f below min limit. Clamping to %f", x.target_temperature_high, min_cool);
+        ESP_LOGI("custom", "Cool setpoint clamped back up to 68°F");
         id(climate_entity).target_temperature_high = min_cool;
         clamped = true;
       }
 
-      // If we had to adjust the values, publish immediately and exit
       if (clamped) {
         id(climate_entity).publish_state();
-        return; // publish_state() safely re-triggers on_state with the legal values
+        return; 
       }
       // ==============================================================
 
