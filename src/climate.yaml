@@ -102,13 +102,12 @@ on_state:
         float current_low = x.target_temperature_low;
         float current_high = x.target_temperature_high;
 
-        // Apply your Fahrenheit conversion if necessary
+        // Apply your Fahrenheit conversion
         if (id(use_fahrenheit)) {
           current_low = current_low * (9.0/5.0) + 32.0;
           current_high = current_high * (9.0/5.0) + 32.0;
         }
 
-        // Round to safely compare float values against defined whole numbers
         int check_low = round(current_low);
         int check_high = round(current_high);
         int expected_low = check_low;
@@ -132,12 +131,19 @@ on_state:
             break;
         }
 
-        // If the user's manual setpoint drifts from the expected preset bounds, clear it
+        // If manual change detected, bypass make_call() and update state directly
         if (check_low != expected_low || check_high != expected_high) {
-          ESP_LOGI("custom", "Manual temperature change detected. Clearing preset.");
-          auto call = id(climate_entity).make_call();
-          call.set_preset(climate::CLIMATE_PRESET_NONE);
-          call.perform();
+          ESP_LOGI("custom", "Manual temperature change detected. Forcing preset to NONE.");
+          
+          // 1. Directly overwrite the underlying C++ variable
+          id(climate_entity).preset = climate::CLIMATE_PRESET_NONE;
+          
+          // 2. Publish the updated state immediately to Home Assistant
+          id(climate_entity).publish_state();
+          
+          // 3. Return early so we don't trigger the rest of the on_state actions 
+          // right now (publish_state will re-trigger them cleanly)
+          return; 
         }
       }
   - lambda: |-
