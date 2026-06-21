@@ -38,10 +38,6 @@ preset_change:
         return; // Ignore if it's an unset or unknown preset
       }
 
-      // 2. Always update the dual setpoints behind the scenes
-      call.set_target_temperature_low(low_temp);
-      call.set_target_temperature_high(high_temp);
-
       // 3. Update the single-point target so ESPHome doesn't force a mode change
       if (id(climate_entity).mode == climate::CLIMATE_MODE_HEAT) {
         call.set_target_temperature(low_temp);
