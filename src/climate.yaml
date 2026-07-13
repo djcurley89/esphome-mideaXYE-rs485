@@ -13,7 +13,7 @@ min_idle_time: 1s
 on_boot_restore_from: MEMORY
 visual:
   temperature_step: "${'1 °F' if use_fahrenheit == true else '1 °C'}"
-default_preset: home 
+default_preset: away 
 preset:
   - name: home
     default_target_temperature_low: "${'66 °F' if use_fahrenheit == true else '19 °C'}"
@@ -94,6 +94,20 @@ dry_mode:
 on_state:
   - lambda: |-
       if (id(first_boot)) {
+        return;
+      }
+
+      // ==============================================================
+      // CORRUPTION / ANOMALY CATCHER
+      // ==============================================================
+      // Flash memory read failures often return 0.0°C (32°F) or NaN.
+      // If the target drops below 12.0°C (54°F), it's a system glitch.
+      if (x.target_temperature_high < 12.0 || x.target_temperature_low < 12.0) {
+        ESP_LOGW("custom", "Anomalous setpoint detected (memory glitch). Forcing AWAY mode.");
+        id(climate_entity).preset = climate::CLIMATE_PRESET_AWAY;
+        id(climate_entity).target_temperature_low = 16.0;  // 16°C = 60°F
+        id(climate_entity).target_temperature_high = 26.0; // 26°C = 78°F
+        id(climate_entity).publish_state();
         return;
       }
 
